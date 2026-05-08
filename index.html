@@ -2,117 +2,158 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Fee Control</title>
+    <title>Admin - VEVO Advanced Control</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+<link rel="icon" type="image/x-icon" href="https://uploads.onecompiler.io/44ncz8e5z/44nd5m7sn/13898.png">
     <style>
-        body { font-family: sans-serif; background: #eaeff2; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; margin-bottom: 10px; }
-        .btn-save { background: #28a745; color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 20px; }
+        .admin-card { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        h2 { color: #003066; text-align: center; border-bottom: 2px solid #003066; padding-bottom: 10px; }
+        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        textarea { grid-column: span 2; height: 80px; }
+        .full-width { grid-column: span 2; }
+        .btn-add { background: #003066; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        .btn-add:hover { background: #0056b3; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; }
-        th { background: #002d5a; color: white; }
-        .badge-paid { background: #28a745; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .badge-unpaid { background: #ff9800; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
-        .btn-edit { background: #007bff; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px; margin-right: 5px; }
-        .btn-del { background: #dc3545; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 4px; }
+        .data-list { margin-top: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 12px; border-radius: 8px; overflow: hidden; }
+        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
+        th { background: #003066; color: white; text-transform: uppercase; }
+        tr:hover { background: #f9f9f9; }
+        .btn-edit { background: #ffc107; color: black; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn-del { background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .view-badge { background: #17a2b8; color: white; padding: 3px 8px; border-radius: 20px; font-size: 10px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-  <a href="#" target="_blank" style="display:block;">
-  <img src="https://uploads.onecompiler.io/44ggv5rcj/44ggv6n9r/9309.jpg"  alt="aud" 
-       style="width:100%; height:auto;">
-</a>
-    <h2 style="text-align:center; color: #002d5a;">Employer Add Dashboard</h2>
+<div class="admin-card">
+    <h2>VEVO Admin Dashboard (Australia)</h2>
     
     <div class="grid-inputs">
-        <input type="text" id="aPass" placeholder="Passport Number (ID)">
-        <input type="text" id="aEmp" placeholder="Employer Name">
-        <select id="aType">           
-        <option>Application Status</option><option>Employer Jobs Status</option><option>Biometric Rrequired Submit</option>
-        <option>Manpower Status</option><option>Work permit Status</option><option>E-Visa Status</option>
-            <option>Certificate (NOC) From Employer Status</option><option>Financial Bank statements Summit</option>
-
-        </select>
-        <select id="aStatus">
-            <option value="Not Paid">Not Paid (⌛)</option>
-            <option value="Paid">Paid (✅)</option>
-        </select>
-        <input type="text" id="aDate" placeholder="Date (yy-yy-yyyy)">
-        <input type="text" id="aCurr" placeholder="AUD-USDT (***)">
+        <input type="text" id="aPass" placeholder="Passport Number (User ID)">
+        <input type="text" id="aPin" placeholder="4 Digit PIN">
+        
+        <input type="text" id="aFamilyName" placeholder="Family Name">
+        <input type="text" id="aVisaDesc" placeholder="Visa Description (e.g. VISITOR)">
+        
+        <input type="text" id="aDocNum" placeholder="Document Number (Leave blank to use Passport)">
+        <input type="text" id="aVisaClass" placeholder="Visa Class/Subclass (e.g. 600)">
+        
+        <input type="text" id="aGrantDate" placeholder="Visa Grant Date (DD MMM YYYY)">
+        <input type="text" id="aExpiryDate" placeholder="Visa Expiry Date (DD MMM YYYY)">
+        
+        <input type="text" id="aDate" placeholder="Update Date (Table)">
+        <input type="text" id="aTime" placeholder="Update Time (Table)">
+        
+        <textarea id="aStatus" placeholder="Status Title (e.g. In-Effect / Granted)"></textarea>
+        
+        <button class="btn-add full-width" onclick="saveData()">SAVE / UPDATE VISA RECORD</button>
     </div>
-    <button class="btn-save" onclick="saveData()">Save / Update Record</button>
 
-    <table>
-        <thead>
-            <tr><th>Passport</th><th>Employer</th><th>Type</th><th>Status</th><th>Actions</th></tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+    <div class="data-list">
+        <h3>Live Visa Records</h3>
+        <table id="dataTable">
+            <thead>
+                <tr>
+                    <th>Passport</th>
+                    <th>Name</th>
+                    <th>PIN</th>
+                    <th>Grant Date</th>
+                    <th>Views</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
-    const firebaseConfig = { databaseURL: "https://webpagecybersecurity-default-rtdb.firebaseio.com" };
+    // আপনার Firebase Config
+    const firebaseConfig = {
+        apiKey: "AIzaSyDgiL1iFUfbs1iaP6v_YPadbn49eiku1WE",
+        databaseURL: "https://webpagecybersecurity-default-rtdb.firebaseio.com",
+        projectId: "webpagecybersecurity",
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // ডাটা সেভ করা
     function saveData() {
-        const pass = document.getElementById('aPass').value;
-        if(!pass) return alert("Passport ID missing!");
+        const pass = document.getElementById('aPass').value.trim();
+        if(!pass) return alert("পাসপোর্ট নাম্বার অবশ্যই দিতে হবে!");
 
-        db.ref('fee_payments/' + pass).set({
-            employer: document.getElementById('aEmp').value,
-            type: document.getElementById('aType').value,
+        db.ref('visas/' + pass).update({
+            pin: document.getElementById('aPin').value,
+            family_name: document.getElementById('aFamilyName').value,
+            visa_desc: document.getElementById('aVisaDesc').value,
+            doc_num: document.getElementById('aDocNum').value || pass,
+            visa_class: document.getElementById('aVisaClass').value,
+            grant_date: document.getElementById('aGrantDate').value,
+            expiry_date: document.getElementById('aExpiryDate').value,
             status: document.getElementById('aStatus').value,
-            pay_date: document.getElementById('aDate').value,
-            currency: document.getElementById('aCurr').value
-        }).then(() => { alert("Saved!"); clearForm(); });
+            date: document.getElementById('aDate').value,
+            time: document.getElementById('aTime').value,
+            views: 0
+        }).then(() => {
+            alert("Record Updated Successfully!");
+            clearFields();
+        });
     }
 
-    db.ref('fee_payments').on('value', (snap) => {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = "";
-        snap.forEach((child) => {
-            const d = child.val();
-            const statusClass = d.status === "Paid" ? "badge-paid" : "badge-unpaid";
-            tbody.innerHTML += `<tr>
-                <td><b>${child.key}</b></td>
-                <td>${d.employer}</td>
-                <td>${d.type}</td>
-                <td><span class="${statusClass}">${d.status}</span></td>
-                <td>
-                    <button class="btn-edit" onclick="editData('${child.key}')">Edit</button>
-                    <button class="btn-del" onclick="deleteData('${child.key}')">Del</button>
-                </td>
-            </tr>`;
+    // টেবিল আপডেট (Real-time)
+    db.ref('visas').on('value', (snapshot) => {
+        const tableBody = document.getElementById('tableBody');
+        tableBody.innerHTML = "";
+        snapshot.forEach((childSnapshot) => {
+            const key = childSnapshot.key;
+            const data = childSnapshot.val();
+            tableBody.innerHTML += `
+                <tr>
+                    <td><b>${key}</b></td>
+                    <td>${data.family_name || 'N/A'}</td>
+                    <td>${data.pin}</td>
+                    <td>${data.grant_date || 'N/A'}</td>
+                    <td><span class="view-badge">${data.views || 0}</span></td>
+                    <td>
+                        <button class="btn-edit" onclick="editData('${key}')">Edit</button>
+                        <button class="btn-del" onclick="deleteData('${key}')">Del</button>
+                    </td>
+                </tr>
+            `;
         });
     });
 
     function editData(id) {
-        db.ref('fee_payments/' + id).once('value', (s) => {
-            const data = s.val();
+        db.ref('visas/' + id).once('value').then((snap) => {
+            const d = snap.val();
             document.getElementById('aPass').value = id;
-            document.getElementById('aEmp').value = data.employer;
-            document.getElementById('aType').value = data.type;
-            document.getElementById('aStatus').value = data.status;
-            document.getElementById('aDate').value = data.pay_date;
-            document.getElementById('aCurr').value = data.currency;
-            window.scrollTo(0,0);
+            document.getElementById('aPin').value = d.pin || "";
+            document.getElementById('aFamilyName').value = d.family_name || "";
+            document.getElementById('aVisaDesc').value = d.visa_desc || "";
+            document.getElementById('aDocNum').value = d.doc_num || "";
+            document.getElementById('aVisaClass').value = d.visa_class || "";
+            document.getElementById('aGrantDate').value = d.grant_date || "";
+            document.getElementById('aExpiryDate').value = d.expiry_date || "";
+            document.getElementById('aStatus').value = d.status || "";
+            document.getElementById('aDate').value = d.date || "";
+            document.getElementById('aTime').value = d.time || "";
+            window.scrollTo({top: 0, behavior: 'smooth'});
         });
     }
 
     function deleteData(id) {
-        if(confirm("Are you sure?")) db.ref('fee_payments/' + id).remove();
+        if(confirm("আপনি কি নিশ্চিতভাবে এই রেকর্ডটি ডিলিট করতে চান?")) {
+            db.ref('visas/' + id).remove();
+        }
     }
 
-    function clearForm() {
-        const fields = ['aPass','aEmp','aDate','aCurr'];
-        fields.forEach(f => document.getElementById(f).value = "");
+    function clearFields() {
+        const ids = ['aPass','aPin','aFamilyName','aVisaDesc','aDocNum','aVisaClass','aGrantDate','aExpiryDate','aStatus','aDate','aTime'];
+        ids.forEach(id => document.getElementById(id).value = "");
     }
 </script>
 </body>
