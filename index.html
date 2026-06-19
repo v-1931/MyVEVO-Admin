@@ -2,74 +2,184 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - VEVO Advanced Control</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
-<link rel="icon" type="image/x-icon" href="https://uploads.onecompiler.io/44ncz8e5z/44nd5m7sn/13898.png">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://uploads.onecompiler.io/44ncz8e5z/44nd5m7sn/13898.png">
+    
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; padding: 20px; }
-        .admin-card { max-width: 800px; margin: auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        h2 { color: #003066; text-align: center; border-bottom: 2px solid #003066; padding-bottom: 10px; }
-        .grid-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        textarea { grid-column: span 2; height: 80px; }
-        .full-width { grid-column: span 2; }
-        .btn-add { background: #003066; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; transition: 0.3s; }
-        .btn-add:hover { background: #0056b3; }
+        :root {
+            --primary: #003066;
+            --success: #2e7d32;
+            --danger: #c62828;
+            --warning: #ef6c00;
+            --bg: #f0f4f8;
+            --dark: #001a35;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: #333; padding-bottom: 40px; }
         
-        .data-list { margin-top: 40px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 12px; border-radius: 8px; overflow: hidden; }
-        th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
-        th { background: #003066; color: white; text-transform: uppercase; }
-        tr:hover { background: #f9f9f9; }
-        .btn-edit { background: #ffc107; color: black; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .btn-del { background: #dc3545; color: white; border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; }
-        .view-badge { background: #17a2b8; color: white; padding: 3px 8px; border-radius: 20px; font-size: 10px; }
+        .admin-header { background-color: var(--dark); color: white; padding: 20px 6%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .admin-header h1 { font-size: 22px; display: flex; align-items: center; gap: 10px; }
+        .live-badge { display: flex; align-items: center; gap: 6px; font-size: 13px; background: rgba(76, 175, 80, 0.2); padding: 5px 12px; border-radius: 20px; color: #4caf50; font-weight: bold; }
+        
+        .wrapper { max-width: 1000px; margin: 30px auto; padding: 0 20px; }
+        
+        /* 📊 কাউন্টার ড্যাশবোর্ড */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid var(--primary); }
+        .stat-card.total { border-left-color: var(--primary); }
+        .stat-card.views { border-left-color: #17a2b8; }
+        .stat-info h3 { font-size: 13px; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-info p { font-size: 28px; font-weight: 800; color: #1e293b; }
+        .stat-icon { font-size: 28px; color: #cbd5e1; }
+
+        /* 📋 কার্ড ও ফর্ম */
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; border-top: 4px solid var(--primary); }
+        .card h2 { font-size: 19px; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; border-bottom: none; padding-bottom: 0; text-align: left; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+        .form-group { display: flex; flex-direction: column; }
+        .full-width { grid-column: span 2; }
+        
+        label { font-weight: 600; margin-bottom: 6px; color: #475569; font-size: 13px; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 14px; background: #fafafa; transition: 0.2s; }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(0, 48, 102, 0.1); }
+        textarea { height: 75px; resize: vertical; }
+        
+        .btn-add { width: 100%; background-color: var(--primary); color: white; border: none; padding: 14px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn-add:hover { background-color: #002244; transform: translateY(-1px); }
+
+        /* 🗃️ ডাটা টেবিল */
+        .table-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow-x: auto; }
+        .table-card h3 { font-size: 17px; margin-bottom: 15px; color: var(--dark); display: flex; align-items: center; gap: 8px; }
+        
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #e2e8f0; border: none; border-bottom: 1px solid #edf2f7; }
+        th { background-color: #f8fafc; color: #475569; font-weight: 700; text-transform: none; font-size: 13px; }
+        tr:hover { background-color: #f8fafc; }
+        
+        .view-badge { background: #e0f7fa; color: #006064; padding: 3px 10px; border-radius: 12px; font-weight: bold; font-size: 11px; display: inline-block; }
+        
+        .action-btns { display: flex; gap: 10px; }
+        .btn-action { border: none; padding: 6px 12px; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; transition: 0.2s; }
+        .btn-edit { background: #fff3e0; color: var(--warning); border: 1px solid #ffe0b2; }
+        .btn-edit:hover { background: var(--warning); color: white; }
+        .btn-del { background: #ffebee; color: var(--danger); border: 1px solid #ffcdd2; }
+        .btn-del:hover { background: var(--danger); color: white; }
+
+        @media (max-width: 650px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .admin-header { flex-direction: column; gap: 10px; text-align: center; }
+        }
     </style>
 </head>
 <body>
 
-<div class="admin-card">
-    <h2>VEVO Admin Dashboard (Australia)</h2>
-    
-    <div class="grid-inputs">
-        <input type="text" id="aPass" placeholder="Passport Number (User ID)">
-        <input type="text" id="aPin" placeholder="4 Digit PIN">
-        
-        <input type="text" id="aFamilyName" placeholder="Family Name">
-        <input type="text" id="aVisaDesc" placeholder="Visa Description (e.g. VISITOR)">
-        
-        <input type="text" id="aDocNum" placeholder="Document Number (Leave blank to use Passport)">
-        <input type="text" id="aVisaClass" placeholder="Visa Class/Subclass (e.g. 600)">
-        
-        <input type="text" id="aGrantDate" placeholder="Visa Grant Date (DD MMM YYYY)">
-        <input type="text" id="aExpiryDate" placeholder="Visa Expiry Date (DD MMM YYYY)">
-        
-        <input type="text" id="aDate" placeholder="Update Date (Table)">
-        <input type="text" id="aTime" placeholder="Update Time (Table)">
-        
-        <textarea id="aStatus" placeholder="Status Title (e.g. In-Effect / Granted)"></textarea>
-        
-        <button class="btn-add full-width" onclick="saveData()">SAVE / UPDATE VISA RECORD</button>
+    <div class="admin-header">
+        <h1><i class="fa-solid fa-user-gear"></i> VEVO Dashboard & Master Management</h1>
+        <div class="live-badge"><i class="fa-solid fa-circle animate-pulse"></i> Live Database Connected</div>
     </div>
 
-    <div class="data-list">
-        <h3>Live Visa Records</h3>
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th>Passport</th>
-                    <th>Name</th>
-                    <th>PIN</th>
-                    <th>Grant Date</th>
-                    <th>Views</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
+    <div class="wrapper">
+        
+        <div class="stats-grid">
+            <div class="stat-card total">
+                <div class="stat-info">
+                    <h3>Total Visa Records</h3>
+                    <p id="countTotal">0</p>
+                </div>
+                <div class="stat-icon"><i class="fa-solid fa-passport"></i></div>
+            </div>
+            <div class="stat-card views">
+                <div class="stat-info">
+                    <h3>Total System Hits/Views</h3>
+                    <p id="countViews">0</p>
+                </div>
+                <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 id="formTitle"><i class="fa-solid fa-folder-plus"></i> Add or Update Visa Record</h2>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Passport Number (User ID) *</label>
+                    <input type="text" id="aPass" placeholder="Enter Passport Number">
+                </div>
+                <div class="form-group">
+                    <label>4 Digit PIN</label>
+                    <input type="text" id="aPin" placeholder="e.g. 1234">
+                </div>
+                <div class="form-group">
+                    <label>Family Name</label>
+                    <input type="text" id="aFamilyName" placeholder="Enter Family Name">
+                </div>
+                <div class="form-group">
+                    <label>Visa Description</label>
+                    <input type="text" id="aVisaDesc" placeholder="e.g. VISITOR">
+                </div>
+                <div class="form-group">
+                    <label>Document Number (Leave blank to use Passport)</label>
+                    <input type="text" id="aDocNum" placeholder="Document Number">
+                </div>
+                <div class="form-group">
+                    <label>Visa Class/Subclass</label>
+                    <input type="text" id="aVisaClass" placeholder="e.g. 600">
+                </div>
+                <div class="form-group">
+                    <label>Visa Grant Date</label>
+                    <input type="text" id="aGrantDate" placeholder="e.g. 15 Jun 2026">
+                </div>
+                <div class="form-group">
+                    <label>Visa Expiry Date</label>
+                    <input type="text" id="aExpiryDate" placeholder="e.g. 15 Jun 2027">
+                </div>
+                <div class="form-group">
+                    <label>Update Date (For Table Display)</label>
+                    <input type="text" id="aDate" placeholder="e.g. 19/06/2026">
+                </div>
+                <div class="form-group">
+                    <label>Update Time (For Table Display)</label>
+                    <input type="text" id="aTime" placeholder="e.g. 05:47 PM">
+                </div>
+                <div class="form-group full-width">
+                    <label>Status Title</label>
+                    <textarea id="aStatus" placeholder="e.g. In-Effect / Granted"></textarea>
+                </div>
+                
+                <button class="btn-add full-width" onclick="saveData()">
+                    <i class="fa-solid fa-floppy-disk"></i> SAVE / UPDATE VISA RECORD
+                </button>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <h3><i class="fa-solid fa-server"></i> Live Visa Records Pool</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Passport</th>
+                        <th>Name</th>
+                        <th>PIN</th>
+                        <th>Grant Date</th>
+                        <th>Views</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: gray; padding: 20px;">Fetching server database...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
 
 <script>
     // আপনার Firebase Config
@@ -80,6 +190,8 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+
+    let isEditMode = false;
 
     // ডাটা সেভ করা
     function saveData() {
@@ -97,40 +209,67 @@
             status: document.getElementById('aStatus').value,
             date: document.getElementById('aDate').value,
             time: document.getElementById('aTime').value,
-            views: 0
-        }).then(() => {
-            alert("Record Updated Successfully!");
-            clearFields();
+            views: isEditMode ? undefined : 0 // নতুন এন্ট্রির ক্ষেত্রে ভিউ রিসেট হবে
+        }, function(error) {
+            if (error) {
+                alert("ত্রুটি: ডাটা সংরক্ষণ করা যায়নি!");
+            } else {
+                alert("Record Saved/Updated Successfully!");
+                resetFormState();
+            }
         });
     }
 
-    // টেবিল আপডেট (Real-time)
+    // টেবিল আপডেট (Real-time) ও কাউন্টার ক্যালকুলেশন
     db.ref('visas').on('value', (snapshot) => {
         const tableBody = document.getElementById('tableBody');
         tableBody.innerHTML = "";
-        snapshot.forEach((childSnapshot) => {
-            const key = childSnapshot.key;
-            const data = childSnapshot.val();
-            tableBody.innerHTML += `
-                <tr>
-                    <td><b>${key}</b></td>
-                    <td>${data.family_name || 'N/A'}</td>
-                    <td>${data.pin}</td>
-                    <td>${data.grant_date || 'N/A'}</td>
-                    <td><span class="view-badge">${data.views || 0}</span></td>
-                    <td>
-                        <button class="btn-edit" onclick="editData('${key}')">Edit</button>
-                        <button class="btn-del" onclick="deleteData('${key}')">Del</button>
-                    </td>
-                </tr>
-            `;
-        });
+        
+        let totalRecords = 0;
+        let totalViews = 0;
+        
+        if(snapshot.exists()){
+            snapshot.forEach((childSnapshot) => {
+                const key = childSnapshot.key;
+                const data = childSnapshot.val();
+                
+                totalRecords++;
+                totalViews += parseInt(data.views || 0);
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td><b>${key}</b></td>
+                        <td>${data.family_name || 'N/A'}</td>
+                        <td><span style="font-family: monospace; font-weight:600; color:#4a5568;">${data.pin || '---'}</span></td>
+                        <td>${data.grant_date || 'N/A'}</td>
+                        <td><span class="view-badge"><i class="fa-regular fa-eye"></i> ${data.views || 0}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="btn-action btn-edit" onclick="editData('${key}')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                <button class="btn-action btn-del" onclick="deleteData('${key}')"><i class="fa-solid fa-trash-can"></i> Del</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        } else {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: gray; padding: 20px;">No visa records found inside database.</td></tr>`;
+        }
+        
+        document.getElementById('countTotal').innerText = totalRecords;
+        document.getElementById('countViews').innerText = totalViews;
     });
 
     function editData(id) {
         db.ref('visas/' + id).once('value').then((snap) => {
             const d = snap.val();
+            isEditMode = true;
+            
+            document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-user-pen" style="color: var(--warning);"></i> Edit Active Record: (${id})`;
+            
             document.getElementById('aPass').value = id;
+            document.getElementById('aPass').style.background = "#e2e8f0";
+            
             document.getElementById('aPin').value = d.pin || "";
             document.getElementById('aFamilyName').value = d.family_name || "";
             document.getElementById('aVisaDesc').value = d.visa_desc || "";
@@ -141,17 +280,23 @@
             document.getElementById('aStatus').value = d.status || "";
             document.getElementById('aDate').value = d.date || "";
             document.getElementById('aTime').value = d.time || "";
+            
             window.scrollTo({top: 0, behavior: 'smooth'});
         });
     }
 
     function deleteData(id) {
         if(confirm("আপনি কি নিশ্চিতভাবে এই রেকর্ডটি ডিলিট করতে চান?")) {
-            db.ref('visas/' + id).remove();
+            db.ref('visas/' + id).remove().then(() => {
+                alert("রেকর্ডটি সফলভাবে মুছে ফেলা হয়েছে।");
+            });
         }
     }
 
-    function clearFields() {
+    function resetFormState() {
+        isEditMode = false;
+        document.getElementById('formTitle').innerHTML = `<i class="fa-solid fa-folder-plus"></i> Add or Update Visa Record`;
+        document.getElementById('aPass').style.background = "#fafafa";
         const ids = ['aPass','aPin','aFamilyName','aVisaDesc','aDocNum','aVisaClass','aGrantDate','aExpiryDate','aStatus','aDate','aTime'];
         ids.forEach(id => document.getElementById(id).value = "");
     }
